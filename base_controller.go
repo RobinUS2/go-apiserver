@@ -1,7 +1,7 @@
 package apiserver
 
 import (
-	"../orm"
+	"github.com/RobinUS2/go-orm"
 	"log"
 	"reflect"
 	"strings"
