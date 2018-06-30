@@ -3,7 +3,6 @@ package apiserver
 import (
 	"github.com/RobinUS2/go-orm"
 	"log"
-	"reflect"
 	"strings"
 )
 
@@ -22,19 +21,8 @@ type BaseControllerI interface {
 	// Put(r *BaseRequest)
 	// Post(r *BaseRequest)
 	// Delete(r *BaseRequest)
-	SetModel(model interface{})
-	GetModel() orm.ModelI
 	Orm() *orm.Orm
 	InitController()
-}
-
-func (controller *BaseController) SetModel(model interface{}) {
-	controller.model = model
-	controller._parseEditableFields()
-}
-
-func (controller *BaseController) GetModel() orm.ModelI {
-	return controller.model.(orm.ModelI)
 }
 
 // Get parameters (lower case key => value map)
@@ -56,27 +44,6 @@ func (controller *BaseController) GetEditableFields() []string {
 	return controller.editableFields
 }
 
-func (controller *BaseController) _parseEditableFields() {
-	// Reflect fields
-	t := controller.GetModel().GetStructType()
-	fieldNames := make([]string, 0)
-	for i := 0; i < t.NumField(); i++ {
-		var field reflect.StructField = t.Field(i)
-		// Can not be anonymous
-		if field.Anonymous {
-			continue
-		}
-		var tags reflect.StructTag = field.Tag
-		// Needs to be tagged for gorm
-		if len(tags.Get("gorm")) < 1 {
-			continue
-		}
-		// log.Printf("%d %#v", i, field)
-		fieldNames = append(fieldNames, field.Name)
-	}
-	controller.editableFields = fieldNames
-}
-
 func (controller *BaseController) Orm() *orm.Orm {
 	return controller.orm
 }
@@ -94,21 +61,6 @@ func (controller *BaseController) RegisterAction(action *BaseAction) {
 		controller.customActions = make([]*BaseAction, 0)
 	}
 	controller.customActions = append(controller.customActions, action)
-}
-
-func (controller *BaseController) GetSingle(r *BaseRequest) interface{} {
-	// fetch single
-	id := r.GetID()
-	if len(id) < 1 {
-		r.SetError("Please provide an ID")
-		return nil
-	}
-	value := controller.GetModel().First(controller.Orm(), r.GetFilterQuery(), id).Value()
-	if value == nil {
-		r.SetError("Object not found")
-		return nil
-	}
-	return value
 }
 
 func NewController(orm *orm.Orm, name string) BaseController {
