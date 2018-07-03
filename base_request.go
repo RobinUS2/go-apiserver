@@ -22,6 +22,8 @@ type BaseRequest struct {
 	bodyJsonMap map[string]interface{}
 }
 
+
+
 func (request *BaseRequest) GetParam(key string) string {
 	var lowerKey = strings.ToLower(key)
 	var res string = ""
