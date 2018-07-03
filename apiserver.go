@@ -13,6 +13,10 @@ type Router struct {
 	listenConf string
 }
 
+func (r *Router) Router() *httprouter.Router {
+	return r.router
+}
+
 type BaseHandle func(*BaseRequest)
 
 func (this *Router) RegisterController(controller BaseControllerI) {
