@@ -128,7 +128,7 @@ func (request *BaseRequest) init() {
 // Set response error
 func (request *BaseRequest) SetError(value interface{}) {
 	valueStr := fmt.Sprintf("%s", value)
-	request.responseObj.errored = true
+	request.responseObj.hasError = true
 	request.responseObj.Error(valueStr)
 }
 

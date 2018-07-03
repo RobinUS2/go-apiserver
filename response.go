@@ -6,12 +6,17 @@ import (
 
 type ApiResponse struct {
 	jresp.JResp
-	errored bool
+	hasError  bool
+	errorCode int
+}
+
+func (a *ApiResponse) SetErrorCode(errorCode int) {
+	a.errorCode = errorCode
 }
 
 func NewResponse() *ApiResponse {
 	return &ApiResponse{
-		JResp:   *jresp.NewJsonResp(),
-		errored: false,
+		JResp:    *jresp.NewJsonResp(),
+		hasError: false,
 	}
 }

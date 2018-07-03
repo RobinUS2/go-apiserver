@@ -48,9 +48,17 @@ func (this *Router) handleFinal(r *BaseRequest) {
 		r.Response.Header().Set("Content-Type", "application/json")
 
 		// Errors?
-		if r.responseObj.errored == false {
+		if r.responseObj.hasError == false {
 			// Nope
 			r.responseObj.OK()
+		} else {
+			// Not good
+			errCode := http.StatusBadRequest
+			if r.responseObj.errorCode > 0 {
+				errCode = r.responseObj.errorCode
+			}
+			r.Response.WriteHeader(errCode)
+
 		}
 		fmt.Fprintf(r.Response, "%s", r.responseObj.ToString(true))
 	}
