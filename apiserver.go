@@ -5,6 +5,9 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
+	"sync"
+	"compress/gzip"
+	"strings"
 )
 
 type Router struct {
@@ -42,6 +45,10 @@ func (this *Router) RegisterController(controller BaseControllerI) {
 	}
 }
 
+var zippers = sync.Pool{New: func() interface{} {
+	return gzip.NewWriter(nil)
+}}
+
 func (this *Router) handleFinal(r *BaseRequest) {
 	if r.responseObj != nil {
 		// Json headers
@@ -60,7 +67,32 @@ func (this *Router) handleFinal(r *BaseRequest) {
 			r.Response.WriteHeader(errCode)
 
 		}
-		fmt.Fprintf(r.Response, "%s", r.responseObj.ToString(true))
+		pretty := r.GetParam("pretty") == "1"
+		respStr := fmt.Sprintf("%s", r.responseObj.ToString(pretty))
+
+		if !strings.Contains(strings.ToLower(r.Request.Header.Get("Accept-Encoding")), "gzip") {
+			// NO gzip
+			r.Response.Write([]byte(respStr))
+		} else {
+			// gzip header
+			r.Response.Header().Set("Content-Encoding", "gzip")
+
+			// Get a Writer from the Pool
+			gz := zippers.Get().(*gzip.Writer)
+
+			// When done, put the Writer back in to the Pool
+			defer zippers.Put(gz)
+
+			// We use Reset to set the writer we want to use.
+			gz.Reset(r.Response)
+
+			// write to gzip stream
+			gz.Write([]byte(respStr))
+
+			// flush & close
+			gz.Flush()
+			gz.Close()
+		}
 	}
 }
 
