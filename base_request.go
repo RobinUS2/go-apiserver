@@ -41,9 +41,12 @@ func (request *BaseRequest) GetParam(key string) string {
 					log.Printf("Failed to read request body %s", err)
 				}
 			}
-			jsonErr := json.Unmarshal(request.body, &request.bodyJsonMap)
-			if jsonErr != nil {
-				log.Printf("Failed to read json body %s", jsonErr)
+			// parse body into json?
+			if request.body != nil && len(request.body) > 0 {
+				jsonErr := json.Unmarshal(request.body, &request.bodyJsonMap)
+				if jsonErr != nil {
+					log.Printf("Failed to read json body %s", jsonErr)
+				}
 			}
 		}
 
