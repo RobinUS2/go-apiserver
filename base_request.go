@@ -22,7 +22,9 @@ type BaseRequest struct {
 	bodyJsonMap map[string]interface{}
 }
 
-
+func (b *BaseRequest) Body() []byte {
+	return b.body
+}
 
 func (request *BaseRequest) GetParam(key string) string {
 	var lowerKey = strings.ToLower(key)
