@@ -31,8 +31,9 @@ func (request *BaseRequest) GetParam(key string) string {
 	var res string = ""
 
 	// Json?
-	var contentType string = request.Request.Header.Get("Content-Type")
-	if contentType == "application/json" {
+	var contentType = request.Request.Header.Get("Content-Type")
+	// to lower and contains since it can also be something like "application/json; charset=utf-8"
+	if strings.Contains(strings.ToLower(contentType), "application/json") {
 		// Lazy init
 		if request.bodyJsonMap == nil {
 			if len(request.body) == 0 {
