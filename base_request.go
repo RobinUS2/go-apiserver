@@ -17,9 +17,10 @@ type BaseRequest struct {
 	Request  *http.Request
 	Params   httprouter.Params
 
-	responseObj *ApiResponse
-	body        []byte
-	bodyJsonMap map[string]interface{}
+	responseObj   *ApiResponse
+	responseBytes []byte
+	body          []byte
+	bodyJsonMap   map[string]interface{}
 }
 
 func (b *BaseRequest) Body() []byte {
@@ -136,6 +137,10 @@ func (request *BaseRequest) SetError(value interface{}) {
 	valueStr := fmt.Sprintf("%s", value)
 	request.responseObj.hasError = true
 	request.responseObj.Error(valueStr)
+}
+
+func (request *BaseRequest) SetResponseBytes(b []byte) {
+	request.responseBytes = b
 }
 
 // Set response value

@@ -1,13 +1,13 @@
 package apiserver
 
 import (
+	"database/sql"
+	"fmt"
 	"github.com/RobinUS2/go-orm"
 	"log"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
-	"fmt"
-	"database/sql"
 )
 
 type BaseController struct {
@@ -17,7 +17,7 @@ type BaseController struct {
 	orm            *orm.Orm
 	editableFields []string
 
-	ModelFn func() interface{}
+	ModelFn         func() interface{}
 	SpecializeRowFn func(rawRow interface{}, data map[string]interface{}) interface{}
 }
 
