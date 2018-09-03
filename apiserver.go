@@ -96,6 +96,10 @@ func (this *Router) handleFinal(r *BaseRequest) {
 	}
 }
 
+func (this *Router) ServeFiles(path string, filesDir string) {
+	this.router.ServeFiles(path, http.Dir(filesDir))
+}
+
 func (this *Router) GET(path string, handle BaseHandle) {
 	log.Printf("Registered GET %s", path)
 	this.router.GET(path, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
