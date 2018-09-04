@@ -14,7 +14,7 @@ type Router struct {
 	server     *http.Server
 	router     *httprouter.Router
 	listenConf string
-	opts *Opts
+	opts       *Opts
 }
 
 func (r *Router) Opts() *Opts {
@@ -125,9 +125,22 @@ func (this *Router) ServeFiles(path string, filesDir string) {
 	this.router.ServeFiles(path, http.Dir(filesDir))
 }
 
+func (this *Router) handleCorsOptions(w http.ResponseWriter, r *http.Request) bool {
+	if r.Method == "OPTIONS" {
+		if this.Opts() != nil && len(this.Opts().AccessControlAllowOrigin) > 0 {
+			w.Header().Set("Access-Control-Allow-Origin", this.Opts().AccessControlAllowOrigin)
+		}
+		return true
+	}
+	return false
+}
+
 func (this *Router) GET(path string, handle BaseHandle) {
 	log.Printf("Registered GET %s", path)
 	this.router.GET(path, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+		if this.handleCorsOptions(w, r) {
+			return
+		}
 		wrappedRequest := newBaseRequest(w, r, params)
 		handle(wrappedRequest)
 		this.handleFinal(wrappedRequest)
@@ -137,6 +150,9 @@ func (this *Router) GET(path string, handle BaseHandle) {
 func (this *Router) PUT(path string, handle BaseHandle) {
 	log.Printf("Registered PUT %s", path)
 	this.router.PUT(path, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+		if this.handleCorsOptions(w, r) {
+			return
+		}
 		wrappedRequest := newBaseRequest(w, r, params)
 		handle(wrappedRequest)
 		this.handleFinal(wrappedRequest)
@@ -146,6 +162,9 @@ func (this *Router) PUT(path string, handle BaseHandle) {
 func (this *Router) POST(path string, handle BaseHandle) {
 	log.Printf("Registered POST %s", path)
 	this.router.POST(path, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+		if this.handleCorsOptions(w, r) {
+			return
+		}
 		wrappedRequest := newBaseRequest(w, r, params)
 		handle(wrappedRequest)
 		this.handleFinal(wrappedRequest)
@@ -155,6 +174,9 @@ func (this *Router) POST(path string, handle BaseHandle) {
 func (this *Router) DELETE(path string, handle BaseHandle) {
 	log.Printf("Registered DELETE %s", path)
 	this.router.DELETE(path, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+		if this.handleCorsOptions(w, r) {
+			return
+		}
 		wrappedRequest := newBaseRequest(w, r, params)
 		handle(wrappedRequest)
 		this.handleFinal(wrappedRequest)
