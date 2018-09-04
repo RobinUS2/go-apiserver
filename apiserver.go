@@ -14,6 +14,19 @@ type Router struct {
 	server     *http.Server
 	router     *httprouter.Router
 	listenConf string
+	opts *Opts
+}
+
+func (r *Router) Opts() *Opts {
+	return r.opts
+}
+
+func (r *Router) SetOpts(opts *Opts) {
+	r.opts = opts
+}
+
+type Opts struct {
+	AccessControlAllowOrigin string
 }
 
 func (r *Router) Router() *httprouter.Router {
@@ -50,8 +63,15 @@ var zippers = sync.Pool{New: func() interface{} {
 }}
 
 func (this *Router) handleFinal(r *BaseRequest) {
+	// CORS
+	if this.Opts() != nil && len(this.Opts().AccessControlAllowOrigin) > 0 {
+		r.Response.Header().Set("Access-Control-Allow-Origin", this.Opts().AccessControlAllowOrigin)
+	}
+
+	// response
 	var respBytes []byte
 	if r.responseBytes != nil {
+		// binary
 		respBytes = r.responseBytes
 	} else if r.responseObj != nil {
 		// Json headers
@@ -75,6 +95,7 @@ func (this *Router) handleFinal(r *BaseRequest) {
 		respBytes = []byte(respStr)
 	}
 
+	// GZIP?
 	if !strings.Contains(strings.ToLower(r.Request.Header.Get("Accept-Encoding")), "gzip") {
 		// NO gzip
 		r.Response.Write(respBytes)
