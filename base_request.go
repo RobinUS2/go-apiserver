@@ -27,6 +27,10 @@ func (b *BaseRequest) Body() []byte {
 	return b.body
 }
 
+func (request *BaseRequest) SetErrorCode(errorCode int) {
+	request.responseObj.SetErrorCode(errorCode)
+}
+
 func (request *BaseRequest) GetParam(key string) string {
 	var lowerKey = strings.ToLower(key)
 	var res string = ""
