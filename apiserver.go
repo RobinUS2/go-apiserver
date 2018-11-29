@@ -70,6 +70,7 @@ func (this *Router) handleFinal(r *BaseRequest) {
 
 	// response
 	var respBytes []byte
+	var errCode int
 	if r.responseBytes != nil {
 		// binary
 		respBytes = r.responseBytes
@@ -83,26 +84,34 @@ func (this *Router) handleFinal(r *BaseRequest) {
 			r.responseObj.OK()
 		} else {
 			// Not good
-			errCode := http.StatusBadRequest
+			errCode = http.StatusBadRequest
 			if r.responseObj.errorCode > 0 {
 				errCode = r.responseObj.errorCode
 			}
-			r.Response.WriteHeader(errCode)
-
 		}
 		pretty := r.GetParam("pretty") == "1"
 		respStr := fmt.Sprintf("%s", r.responseObj.ToString(pretty))
 		respBytes = []byte(respStr)
 	}
 
-	// GZIP?
-	if !strings.Contains(strings.ToLower(r.Request.Header.Get("Accept-Encoding")), "gzip") {
+	// gzip?
+	isGzip := strings.Contains(strings.ToLower(r.Request.Header.Get("Accept-Encoding")), "gzip")
+
+	// gzip header
+	if isGzip {
+		r.Response.Header().Set("Content-Encoding", "gzip")
+	}
+
+	// error?
+	if errCode > 0 {
+		r.Response.WriteHeader(errCode)
+	}
+
+	// write output
+	if !isGzip {
 		// NO gzip
 		r.Response.Write(respBytes)
 	} else {
-		// gzip header
-		r.Response.Header().Set("Content-Encoding", "gzip")
-
 		// Get a Writer from the Pool
 		gz := zippers.Get().(*gzip.Writer)
 
